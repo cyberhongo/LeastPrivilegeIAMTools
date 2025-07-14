@@ -2,9 +2,9 @@
   <img src="https://lucidityconsult.net/wp-content/uploads/2024/08/unnamed.png" alt="Lucidity Consulting LLC Logo" width="150"/>
 </p>
 
-# 🛡️ LeastPrivilegeIAMTools PowerShell Module  
+# 🛡️ LeastPrivilegeIAMTools PS Helper Script  
 **Author:** Ashton Mairura  
-**Version:** 1.0.0  
+**Version:** 1.0.3  
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
