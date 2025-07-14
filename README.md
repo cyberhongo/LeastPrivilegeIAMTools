@@ -1,5 +1,7 @@
 LeastPrivilegeIAMTools PowerShell Module 🛡️
+
 Author: Ashton Mairura
+
 Version: 1.0.0
 
 Empower your Microsoft Graph environment with the LeastPrivilegeIAMTools PowerShell Module! This tool helps you audit and reduce app permissions, ensuring your applications adhere strictly to the principle of least privilege.
