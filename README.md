@@ -102,6 +102,3 @@ This project is licensed under the MIT License.
 🔁 GitHub Owner: Lucidity Consulting LLC
 🔗 Repository URL: https://github.com/cyberhongo/LeastPrivilegeIAMTools
 
-<p align="center">
-  <img src="https://lucidityconsult.net/wp-content/uploads/2024/08/unnamed.png" alt="Lucidity Consulting LLC Logo" width="150"/>
-</p>
