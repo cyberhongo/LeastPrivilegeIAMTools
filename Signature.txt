@@ -1,0 +1,16 @@
+Code Signing Certificate Info
+=============================
+
+This module is signed with a self-signed certificate generated using:
+
+    New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=LeastPrivilegeIAMTools" -CertStoreLocation "Cert:\CurrentUser\My"
+
+Thumbprint: [REPLACE_WITH_YOUR_CERT_THUMBPRINT]
+Valid From: [DATE]
+Valid To:   [DATE + 1 year]
+
+Note:
+- This certificate is intended for lab/testing use only.
+- For production, replace with an org-issued code signing certificate.
+- You can re-sign the module using:
+    Set-AuthenticodeSignature -FilePath .\LeastPrivilegeIAMTools.psm1 -Certificate (Get-Item Cert:\CurrentUser\My\<Thumbprint>)
