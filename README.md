@@ -4,10 +4,7 @@
 
 [![PowerShell Gallery Version](https://img.shields.io/badge/PowerShellGallery-v1.0.0-blue.svg?logo=powershell)](https://www.powershellgallery.com/)  
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)  
-[![GitHub Stars](https://img.shields.io/github/stars/YOUR_USERNAME/LeastPrivilegeIAMTools?style=social)](https://github.com/YOUR_USERNAME/LeastPrivilegeIAMTools/stargazers)  
-[![Issues](https://img.shields.io/github/issues/YOUR_USERNAME/LeastPrivilegeIAMTools.svg)](https://github.com/YOUR_USERNAME/LeastPrivilegeIAMTools/issues)  
-[![CI Status](https://github.com/YOUR_USERNAME/LeastPrivilegeIAMTools/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/LeastPrivilegeIAMTools/actions)
-
+[![GitHub Stars](https://img.shields.io/github/stars/cyberhongo/LeastPrivilegeIAMTools?style=social)](https://github.com/cyberhongo/LeastPrivilegeIAMTools/stargazers)
 > Empower your Microsoft Graph environment with `LeastPrivilegeIAMTools`  
 > Audit and reduce app permissions using **least privilege** principles.
 
