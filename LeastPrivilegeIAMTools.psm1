@@ -1,82 +1,97 @@
-# Module: LeastPrivilegeIAMTools
 function Invoke-LeastPrivilegeAudit {
-    param (
-        [string]$OutputPath = ".\OverprivilegedAppsAudit.txt"
+    <#
+    .SYNOPSIS
+        Performs a least-privilege audit of Azure AD / Entra ID application registrations.
+
+    .DESCRIPTION
+        - Installs Microsoft Graph SDK if not present.
+        - Supports both delegated login (interactive) and application login (client credentials).
+        - Flags apps that request application roles (app-level permissions).
+        - Outputs a timestamped audit report to a specified file.
+        - Disconnects from Graph when complete.
+
+    .PARAMETER OutputPath
+        Path where the audit report will be saved.
+
+    .PARAMETER ClientId
+        (Optional) Application (client) ID for app-based authentication.
+
+    .PARAMETER TenantId
+        (Optional) Directory (tenant) ID for app-based authentication.
+
+    .PARAMETER ClientSecret
+        (Optional) Client secret for app-based authentication.
+    #>
+
+    [CmdletBinding()]
+    param(
+        [string]$OutputPath = "C:\Audit\OverprivilegedApps-$((Get-Date).ToString('yyyyMMdd-HHmmss')).txt",
+        [string]$ClientId,
+        [string]$TenantId,
+        [string]$ClientSecret
     )
 
-    Connect-MgGraph -Scopes "Application.Read.All", "AppRoleAssignment.Read.All", "DelegatedPermissionGrant.Read.All"
-    "Audit Report - $(Get-Date)" | Out-File $OutputPath
+    Set-StrictMode -Version Latest
+    $ErrorActionPreference = 'Stop'
 
-    $apps = Get-MgApplication -All
+    # Ensure Microsoft Graph SDK is installed
+    if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+        Write-Verbose "Installing Microsoft.Graph SDK..."
+        Install-Module -Name Microsoft.Graph -Scope CurrentUser -AllowClobber -Force
+    }
+
+    Import-Module Microsoft.Graph -ErrorAction Stop
+
+    # Connect to Microsoft Graph
+    if ($ClientId -and $TenantId -and $ClientSecret) {
+        Write-Host "Using application-based authentication..."
+        Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -ClientSecret $ClientSecret -Scopes "https://graph.microsoft.com/.default"
+    } else {
+        Write-Host "Using delegated (interactive) authentication..."
+        $delegatedScopes = @(
+            'Application.Read.All'
+            'Directory.Read.All'
+            'RoleManagement.Read.Directory'
+        )
+        Connect-MgGraph -Scopes $delegatedScopes -NoWelcome
+    }
+
+    # Validate connection
+    try {
+        $null = Get-MgContext
+    } catch {
+        throw "Failed to connect to Microsoft Graph. Check credentials and permissions."
+    }
+
+    # Ensure output directory exists
+    $folder = Split-Path -Parent $OutputPath
+    if (-not (Test-Path $folder)) {
+        New-Item -ItemType Directory -Path $folder | Out-Null
+    }
+
+    # Begin audit
+    "Least Privilege Audit Report - $(Get-Date -Format 'u')" | Out-File -FilePath $OutputPath -Encoding utf8
+
+    try {
+        $apps = Get-MgApplication -All
+    } catch {
+        throw "Failed to retrieve applications. Ensure the app has Application.Read.All and Directory.Read.All permissions with admin consent."
+    }
+
     foreach ($app in $apps) {
-        $appId = $app.AppId
-        $displayName = $app.DisplayName
-        $permissions = Get-MgServicePrincipalOauth2PermissionGrant -Filter "ClientId eq '$appId'" -ErrorAction SilentlyContinue
+        $privilegedRoles = $app.RequiredResourceAccess.ResourceAccess |
+            Where-Object { $_.Type -eq 'Role' }
 
-        if ($permissions) {
-            foreach ($perm in $permissions) {
-                $scope = $perm.Scope
-                if ($scope -match "All" -or $scope -match "Write") {
-                    "$displayName ($appId) has potentially overprivileged scope: $scope" | Out-File $OutputPath -Append
-                }
+        if ($privilegedRoles) {
+            "Over-privileged app: $($app.DisplayName) ($($app.AppId))" | Out-File -FilePath $OutputPath -Append -Encoding utf8
+            foreach ($role in $privilegedRoles) {
+                "  - Role ID: $($role.Id)" | Out-File -FilePath $OutputPath -Append -Encoding utf8
             }
         }
     }
-    Write-Host "Audit complete. Output saved to $OutputPath"
+
+    Disconnect-MgGraph
+    Write-Host "Audit complete. Output saved to: $OutputPath"
 }
 
-function Invoke-LeastPrivilegeReduction {
-    param (
-        [switch]$WhatIf
-    )
-
-    Connect-MgGraph -Scopes "Application.ReadWrite.All", "AppRoleAssignment.ReadWrite.All"
-
-    $reductionMap = @{
-        "User.ReadWrite.All"        = "User.Read.All"
-        "Files.ReadWrite.All"       = "Files.Read.All"
-        "Calendars.ReadWrite"       = "Calendars.Read"
-        "Mail.ReadWrite"            = "Mail.Read"
-        "Group.ReadWrite.All"       = "Group.Read.All"
-        "Directory.ReadWrite.All"   = "Directory.Read.All"
-        "Contacts.ReadWrite"        = "Contacts.Read"
-        "Tasks.ReadWrite"           = "Tasks.Read"
-        "Sites.ReadWrite.All"       = "Sites.Read.All"
-        "Device.ReadWrite.All"      = "Device.Read.All"
-    }
-
-    $apps = Get-MgApplication -All
-    foreach ($app in $apps) {
-        $appId = $app.AppId
-        $displayName = $app.DisplayName
-        $grants = Get-MgServicePrincipalOauth2PermissionGrant -Filter "ClientId eq '$appId'" -ErrorAction SilentlyContinue
-
-        foreach ($grant in $grants) {
-            $currentScopes = $grant.Scope -split ' '
-            $newScopes = @()
-            $changed = $false
-
-            foreach ($scope in $currentScopes) {
-                if ($reductionMap.ContainsKey($scope)) {
-                    $newScope = $reductionMap[$scope]
-                    Write-Host "[$displayName] Reducing '$scope' → '$newScope'"
-                    $newScopes += $newScope
-                    $changed = $true
-                } else {
-                    $newScopes += $scope
-                }
-            }
-
-            if ($changed -and ($newScopes -ne $currentScopes)) {
-                if ($WhatIf) {
-                    Write-Host "WHATIF: Would update $displayName ($appId) with scopes: $($newScopes -join ', ')"
-                } else {
-                    Set-MgServicePrincipalOauth2PermissionGrant -OAuth2PermissionGrantId $grant.Id -Scope ($newScopes -join ' ')
-                    Write-Host "Updated $displayName with reduced scopes."
-                }
-            }
-        }
-    }
-
-    Write-Host "Permission reduction process complete."
-}
+Export-ModuleMember -Function Invoke-LeastPrivilegeAudit
