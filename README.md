@@ -1,4 +1,4 @@
-# 🛡️ LeastPrivilegeIAMTools PowerShell Module
+# 🛡️ LucidSecOps LeastPrivilegeIAM PS Tool
 
 **Author:** Ashton Mairura • **Version:** 1.0.3 • **License:** MIT
 ![PowerShell Gallery](https://img.shields.io/badge/PowerShellGallery-v1.0.3-blue?logo=powershell) ![MIT](https://img.shields.io/badge/License-MIT-green)
