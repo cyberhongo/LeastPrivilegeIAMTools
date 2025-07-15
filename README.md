@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 LeastPrivilegeIAMTools PowerShell Module
 ========================================
 
@@ -241,5 +240,3 @@ This project is licensed under the MIT License.
 ✅ Lucidity Consulting LLC ✅
 🔁 GitHub Owner: Lucidity Consulting LLC
 🔗 Repository URL: https://github.com/cyberhongo/LeastPrivilegeIAMTools
-
->>>>>>> 0f9801ff33af932ae8504cbe109a05110b73fef8
