@@ -1,4 +1,4 @@
-# 🛡️ LeastPrivilegeIAMTools PowerShell Module
+# 🛡️ LucidSecOps LeastPrivilegeIAM PS Helper
 
 **Author:** Ashton Mairura • 
 **Version:** 1.0.4 • 
