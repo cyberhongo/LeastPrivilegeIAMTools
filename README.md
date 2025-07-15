@@ -15,8 +15,8 @@ Functions Included:
 1. Invoke-LeastPrivilegeAudit
    - Description: Audits all app registrations for overprivileged scopes.
    - Usage:
-       Import-Module .\LeastPrivilegeIAMTools.psm1
-       Invoke-LeastPrivilegeAudit -OutputPath "C:\Audit\OverprivilegedApps.txt"
+       Import-Module .\LeastPrivilegeIAMTools.psm1 ## Full path of where the script resides
+       Invoke-LeastPrivilegeAudit -Verbose -OutputPath "C:\Audit\LeastPriv.txt"
 
 2. Invoke-LeastPrivilegeReduction
    - Description: Replaces high-privilege Graph scopes with least-privileged alternatives.
