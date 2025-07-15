@@ -1,7 +1,7 @@
 # 🛡️ LeastPrivilegeIAMTools PowerShell Module
 
-**Author:** Ashton Mairura • **Version:** 1.0.3 • **License:** MIT
-![PowerShell Gallery](https://img.shields.io/badge/PowerShellGallery-v1.0.3-blue?logo=powershell) ![MIT](https://img.shields.io/badge/License-MIT-green)
+**Author:** Ashton Mairura • **Version:** 1.0.4 • **License:** MIT
+![MIT](https://img.shields.io/badge/License-MIT-green)
 
 > **LeastPrivilegeIAMTools** helps you **discover** and **remediate** over‑privileged Microsoft Graph permissions in Azure AD / Entra ID app registrations.
 
