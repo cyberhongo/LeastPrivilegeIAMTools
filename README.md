@@ -1,242 +1,153 @@
+# 🛡️ LeastPrivilegeIAMTools PowerShell Module
 
-LeastPrivilegeIAMTools PowerShell Module
-========================================
+**Author:** Ashton Mairura • **Version:** 1.0.3 • **License:** MIT
+![PowerShell Gallery](https://img.shields.io/badge/PowerShellGallery-v1.0.3-blue?logo=powershell) ![MIT](https://img.shields.io/badge/License-MIT-green)
 
-Author: Ashton Mairura
-Version: 1.0.0
-Purpose: Audit and reduce Microsoft Graph app permissions using the principle of least privilege.
-
----
-
-Functions Included:
--------------------
-
-1. Invoke-LeastPrivilegeAudit
-   - Description: Audits all app registrations for overprivileged scopes.
-   - Usage:
-       Import-Module .\LeastPrivilegeIAMTools.psm1 ## Full path of where the script resides
-       Invoke-LeastPrivilegeAudit -Verbose -OutputPath "C:\Audit\LeastPriv.txt"
-
-2. Invoke-LeastPrivilegeReduction
-   - Description: Replaces high-privilege Graph scopes with least-privileged alternatives.
-   - Usage:
-       Invoke-LeastPrivilegeReduction -WhatIf   # Safe dry run
-       Invoke-LeastPrivilegeReduction           # Live run (after review)
+> **LeastPrivilegeIAMTools** helps you **discover** and **remediate** over‑privileged Microsoft Graph permissions in Azure AD / Entra ID app registrations.
 
 ---
 
-Requirements:
--------------
-- PowerShell 7+
-- Microsoft.Graph PowerShell SDK
-- Permissions:
-    - Application.Read.All
-    - AppRoleAssignment.Read.All
-    - DelegatedPermissionGrant.Read.All
-    - Application.ReadWrite.All (for reduction)
+## 📑 Table of Contents
+
+1. [Features](#features)
+2. [Functions](#functions)
+3. [Installation](#installation)
+4. [Examples](#examples)
+5. [Requirements](#requirements)
+6. [Required Graph Permissions](#required-graph-permissions)
+7. [Security Notes](#security-notes)
+8. [Repository Structure](#repository-structure)
+9. [Contributing](#contributing)
+10. [License](#license)
 
 ---
 
-Security Notes:
----------------
-- All changes are gated behind -WhatIf by default.
-- Module is signed with a self-signed certificate for lab use.
-- No secrets or hardcoded credentials are used.
+## ✨ Features
 
-=======
-# 🛡️ LeastPrivilegeIAMTools PowerShell Module  
-**Author:** Ashton Mairura  
-**Version:** 1.0.0  
-
-[![PowerShell Gallery Version](https://img.shields.io/badge/PowerShellGallery-v1.0.0-blue.svg?logo=powershell)](https://www.powershellgallery.com/)  
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)  
-[![GitHub Stars](https://img.shields.io/github/stars/cyberhongo/LeastPrivilegeIAMTools?style=social)](https://github.com/cyberhongo/LeastPrivilegeIAMTools/stargazers)
-> Empower your Microsoft Graph environment with `LeastPrivilegeIAMTools`  
-> Audit and reduce app permissions using **least privilege** principles.
+| Feature                  | Description                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| **Audit**                | Identify Graph *application* permissions (AppRoles) that breach least‑privilege guidelines.     |
+| **Risk Scoring**         | Flags apps as **High** or **Medium** based on permission names (`Write`, `ReadWrite`, `*.All`). |
+| **Multi‑format Reports** | Generates **TXT**, **CSV**, **JSON**, and **HTML** dashboards.                                  |
+| **Reduction (optional)** | Replace high‑impact scopes with safer alternatives (`Invoke‑LeastPrivilegeReduction`).          |
+| **Sentinel Upload**      | Push JSON results to **Azure Log Analytics / Sentinel** for SOC visibility.                     |
+| **Signed Module**        | Ship with a self‑signed cert for lab use (re‑sign with your own cert for prod).                 |
 
 ---
 
-## 📚 Table of Contents
+## 🔧 Functions
 
-- [🚀 Functions](#-functions)
-  - [🔍 Invoke-LeastPrivilegeAudit](#-invoke-leastprivilegeaudit)
-  - [✂️ Invoke-LeastPrivilegeReduction](#-invoke-leastprivilegereduction)
-- [📝 Requirements](#-requirements)
-- [🔑 Required Microsoft Graph Permissions](#-required-microsoft-graph-permissions)
-- [🔒 Security Notes](#-security-notes)
-- [📂 Repository Structure (Optional)](#-repository-structure-optional)
+### `Invoke‑LeastPrivilegeAudit`
 
----
+Audits app registrations and writes reports.
 
-## 🚀 Functions
-
-### 🔍 `Invoke-LeastPrivilegeAudit`  
-Scans **Azure AD app registrations** for **overprivileged Microsoft Graph scopes**.  
-Helps you identify unnecessary permissions.
-
-#### 🧪 Usage
 ```powershell
 # Import the module
 Import-Module .\LeastPrivilegeIAMTools.psm1
 
-# Run the audit
-Invoke-LeastPrivilegeAudit -OutputPath "C:\Audit\OverprivilegedApps.txt"
+# Delegated (interactive) run
+Invoke-LeastPrivilegeAudit -OutputPath "C:\Audit\OverPriv.txt" -Verbose
 
-## ✂️ Invoke-LeastPrivilegeReduction
-Replaces high-privilege Graph scopes with least-privileged alternatives.
-Helps right-size app permissions securely.
-# Preview changes (safe dry run)
+# Service‑principal (app) auth + Sentinel push
+Invoke-LeastPrivilegeAudit -TenantId "<TenantId>" -ClientId "<ClientId>" \
+    -CertificateThumbprint "<Thumbprint>" -WorkspaceId "<WSID>" \
+    -SharedKey "<PrimaryKey>" -OutputPath "C:\Audit\OverPriv.txt"
+```
+
+### `Invoke‑LeastPrivilegeReduction`
+
+*(optional)* Automatically swaps risky Graph permissions for reduced ones. Always supports **‑WhatIf**.
+
+```powershell
+# Preview changes
 Invoke-LeastPrivilegeReduction -WhatIf
 
-# Apply changes (after careful review)
+# Apply changes (after review)
 Invoke-LeastPrivilegeReduction
+```
 
-📝 Requirements
-PowerShell 7.0+
+---
 
-Microsoft Graph PowerShell SDK
+## 📦 Installation
+
+```powershell
+# Clone the repo
+git clone https://github.com/cyberhongo/LeastPrivilegeIAMTools.git
+cd LeastPrivilegeIAMTools
+
+# Ensure Microsoft Graph SDK
 Install-Module Microsoft.Graph -Scope CurrentUser
 
-🔑 Required Microsoft Graph Permissions
-For full functionality, the following Microsoft Graph permissions are required:
-| Scope                               | Purpose                                                   |
-| ----------------------------------- | --------------------------------------------------------- |
-| `Application.Read.All`              | Enumerate applications and service principals             |
-| `AppRoleAssignment.Read.All`        | Read app role assignments                                 |
-| `DelegatedPermissionGrant.Read.All` | Review delegated grants                                   |
-| `Application.ReadWrite.All`         | Modify application permissions *(required for reduction)* |
+# Import
+Import-Module .\LeastPrivilegeIAMTools.psm1 -Force
+```
 
-🔒 Security Notes
-✅ Dry Run Safety: -WhatIf is supported for safe testing before making changes.
+---
 
-🔏 Self-Signed Module: This module is signed with a test/lab certificate.
+## 🚀 Examples
 
-🚫 No Secrets Stored: No hardcoded credentials or tokens.
+| Scenario                               | Command                                                           |
+| -------------------------------------- | ----------------------------------------------------------------- |
+| **Basic audit (delegated)**            | `Invoke-LeastPrivilegeAudit -OutputPath 'C:\Audit\LeastPriv.txt'` |
+| **Include Microsoft first‑party apps** | `Invoke-LeastPrivilegeAudit -IncludeFirstParty`                   |
+| **Upload to Sentinel**                 | `Invoke-LeastPrivilegeAudit -WorkspaceId <id> -SharedKey <key>`   |
+| **Dry‑run reduction**                  | `Invoke-LeastPrivilegeReduction -WhatIf`                          |
 
-📂 Repository Structure
-/
-├── LeastPrivilegeIAMTools.psm1
-├── README.md
+---
+
+## 📝 Requirements
+
+* PowerShell **7.0** or newer
+* **Microsoft.Graph** PowerShell SDK
+  `Install-Module Microsoft.Graph -Scope CurrentUser`
+
+---
+
+## 🔑 Required Graph Permissions
+
+| Scope                               | Reason                                       |
+| ----------------------------------- | -------------------------------------------- |
+| `Application.Read.All`              | Enumerate applications & service principals  |
+| `Directory.Read.All`                | Read directory objects & AppRole assignments |
+| `RoleManagement.Read.Directory`     | Inspect directory roles                      |
+| `AppRoleAssignment.Read.All`        | *(App‑based auth)* Read app role assignments |
+| `DelegatedPermissionGrant.Read.All` | Review delegated grants                      |
+| `Application.ReadWrite.All`         | *(Reduction)* Modify application permissions |
+
+> **Tip:** Run `Connect‑MgGraph -Scopes <comma‑separated scopes>` once as Global Admin and consent on behalf of your tenant.
+
+---
+
+## 🔒 Security Notes
+
+* **Dry‑run first:** Every modifying cmdlet supports `‑WhatIf`.
+* **No secrets stored:** Auth via `Connect‑MgGraph` or service‑principal certificate.
+* **Signed:** Module ships with a test cert—replace with your own for production.
+
+---
+
+## 📂 Repository Structure
+
+```
+LeastPrivilegeIAMTools/
+├── LeastPrivilegeIAMTools.psm1       # Module code
+├── LeastPrivilegeIAMTools.psd1       # Manifest
+├── README.md                         # This file
+├── Signature.txt                     # Signing thumbprint & hash
+├── Sign-ModuleWithSelfSignedCert.ps1 # Helper to (re)sign
 └── Examples/
-    ├── OverprivilegedApps.txt
     └── ExampleUsage.ps1
+```
 
-🙌 Contributions
-Pull requests are welcome!
-If you spot permission misconfigurations or scope mappings that need tuning—open an issue or PR.
+---
+
+## 🙌 Contributing
+
+Pull requests are welcome! If you spot scope mappings or risk logic that need improvement, open an issue or PR.
+
+---
 
 ## 📄 License
-This project is licensed under the [MIT License](LICENSE).  
-© 2025 Lucidity Consulting LLC. All rights reserved.
 
-## ✅ Lucidity Consulting LLC ✅ ##
-
-- 🔁 **GitHub Owner**: cyberhongo
-
-- 🔗 **Repository URL**: `https://github.com/cyberhongo/LeastPrivilegeIAMTools`
-
->>>>>>> 387353bdb53909d065b8897a56b3650d8950f24d
-=======
-<p align="center">
-  <img src="https://lucidityconsult.net/wp-content/uploads/2024/08/unnamed.png" alt="Lucidity Consulting LLC Logo" width="150"/>
-</p>
-
-# 🛡️ LeastPrivilegeIAMTools PS Helper Script  
-**Author:** Ashton Mairura  
-**Version:** 1.0.3  
-
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-> Empower your Microsoft Graph environment with `LeastPrivilegeIAMTools`  
-> Audit and reduce app permissions using **least privilege** principles.
-
----
-
-## 📚 Table of Contents
-
-- [🚀 Functions](#-functions)
-  - [🔍 Invoke-LeastPrivilegeAudit](#-invoke-leastprivilegeaudit)
-  - [✂️ Invoke-LeastPrivilegeReduction](#-invoke-leastprivilegereduction)
-- [🧪 Example Usages](#-example-usages)
-- [📝 Requirements](#-requirements)
-- [🔑 Required Microsoft Graph Permissions](#-required-microsoft-graph-permissions)
-- [🔒 Security Notes](#-security-notes)
-- [📂 Repository Structure (Optional)](#-repository-structure-optional)
-- [🙌 Contributions](#-contributions)
-- [📄 License](#-license)
-
----
-
-## 🚀 Functions
-
-### 🔍 `Invoke-LeastPrivilegeAudit`  
-Scans **Azure AD app registrations** for **overprivileged Microsoft Graph scopes**.  
-Helps you identify unnecessary permissions.
-
-### ✂️ `Invoke-LeastPrivilegeReduction`  
-Replaces high-privilege Graph scopes with least-privileged alternatives.  
-Helps right-size app permissions securely.
-
----
-
-## 🧪 Example Usages
-
-### 🔹 Interactive Delegated Login (default)
-```powershell
-# Import the module
-Import-Module .\LeastPrivilegeIAMTools.psm1
-
-# Run audit with delegated login
-Invoke-LeastPrivilegeAudit -OutputPath "C:\Audit\delegated.txt"
-🔹 App-Based Auth (Client Credentials)
-Invoke-LeastPrivilegeAudit -OutputPath "C:\Audit\appauth.txt" `
-    -ClientId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
-    -TenantId "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
-    -ClientSecret "yourAppSecretHere"
-
-📝 Requirements
-PowerShell 7.0+
-
-Microsoft Graph PowerShell SDK
-Install it via:
-Install-Module Microsoft.Graph -Scope CurrentUser
-
-🔑 Required Microsoft Graph Permissions
-For full functionality, the following Microsoft Graph permissions are required:
-| Scope                               | Purpose                                                   |
-| ----------------------------------- | --------------------------------------------------------- |
-| `Application.Read.All`              | Enumerate applications and service principals             |
-| `Directory.Read.All`                | Read directory objects                                    |
-| `RoleManagement.Read.Directory`     | Inspect directory roles                                   |
-| `AppRoleAssignment.Read.All`        | *(App-based only)* Read app role assignments              |
-| `DelegatedPermissionGrant.Read.All` | Review delegated grants                                   |
-| `Application.ReadWrite.All`         | Modify application permissions *(required for reduction)* |
----------------------------------------------------------------------------------------------------
-
-🔒 Security Notes
-✅ Dry Run Safety: -WhatIf is supported for safe testing before making changes.
-🔏 Self-Signed Module: This module is signed with a test/lab certificate.
-🚫 No Secrets Stored: No hardcoded credentials or tokens are stored.
-
-📂 Repository Structure
-/
-├── LeastPrivilegeIAMTools.psm1
-├── LeastPrivilegeIAMTools.psd1
-├── README.md
-├── Signature.txt
-├── Sign-ModuleWithSelfSignedCert.ps1
-└── Examples/
-    ├── OverprivilegedApps.txt
-    └── ExampleUsage.ps1
-
-🙌 Contributions
-Pull requests are welcome!
-If you spot permission misconfigurations or scope mappings that need tuning—open an issue or PR.
-
-📄 License
-This project is licensed under the MIT License.
-© 2025 Lucidity Consulting LLC. All rights reserved.
-
-✅ Lucidity Consulting LLC ✅
-🔁 GitHub Owner: Lucidity Consulting LLC
-🔗 Repository URL: https://github.com/cyberhongo/LeastPrivilegeIAMTools
+This project is licensed under the **MIT License**.
+© 2025 Lucidity Consulting LLC. All rights reserved.
