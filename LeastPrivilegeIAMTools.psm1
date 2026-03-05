@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    LeastPrivilegeIAMTools – Entra ID + on-prem Active Directory IAM security auditor.
+    LeastPrivilegeIAMTools - Entra ID + on-prem Active Directory IAM security auditor.
 
 .DESCRIPTION
     Modular security audit tool for MSP use against client environments.
@@ -8,10 +8,10 @@
     and hybrid identity posture. Produces scored reports in TXT / CSV / JSON / HTML.
 
     Sub-modules loaded automatically from .\Modules\:
-        EntraID-AppAudit.psm1      – App registration permission audit
-        EntraID-IdentityRisk.psm1  – Stale apps, expiring secrets, guest owners, role assignments
-        AD-SecurityAudit.psm1      – On-prem AD: Kerberos, DCSync, trusts, privileged accounts
-        Scoring-Engine.psm1        – Weighted risk scoring + domain health score
+        EntraID-AppAudit.psm1      - App registration permission audit
+        EntraID-IdentityRisk.psm1  - Stale apps, expiring secrets, guest owners, role assignments
+        AD-SecurityAudit.psm1      - On-prem AD: Kerberos, DCSync, trusts, privileged accounts
+        Scoring-Engine.psm1        - Weighted risk scoring + domain health score
 
 .AUTHOR   Lucidity Consulting LLC | Ashton Mairura
 .LICENSE  MIT
@@ -35,7 +35,7 @@ foreach ($sm in $subModules) {
     if (Test-Path $fullPath) {
         . $fullPath
     } else {
-        Write-Warning "Sub-module not found: $fullPath — related functions will be unavailable."
+        Write-Warning "Sub-module not found: $fullPath - related functions will be unavailable."
     }
 }
 
@@ -128,7 +128,7 @@ function Invoke-LeastPrivilegeAudit {
     )
 
     $startTime = Get-Date
-    Write-Host "`n[LeastPrivilegeIAMTools v2.0] Entra ID Audit — $($startTime.ToString('yyyy-MM-dd HH:mm')) UTC" -ForegroundColor Cyan
+    Write-Host "`n[LeastPrivilegeIAMTools v2.0] Entra ID Audit - $($startTime.ToString('yyyy-MM-dd HH:mm')) UTC" -ForegroundColor Cyan
 
     Connect-GraphForAudit -TenantId $TenantId -ClientId $ClientId `
         -CertificateThumbprint $CertificateThumbprint -ClientSecret $ClientSecret
@@ -158,7 +158,7 @@ function Invoke-LeastPrivilegeAudit {
 
     Disconnect-MgGraph | Out-Null
     $elapsed = (Get-Date) - $startTime
-    Write-Host "`n[✓] Audit complete in $([int]$elapsed.TotalSeconds)s — Score: $($scoreResult.DomainScore)/100 ($($scoreResult.RiskRating))" -ForegroundColor Green
+    Write-Host "`n[✓] Audit complete in $([int]$elapsed.TotalSeconds)s - Score: $($scoreResult.DomainScore)/100 ($($scoreResult.RiskRating))" -ForegroundColor Green
     Write-Host "    Reports: $folder"
     return $scoreResult
 }
@@ -192,7 +192,7 @@ function Invoke-ADSecurityAudit {
     )
 
     $startTime = Get-Date
-    Write-Host "`n[LeastPrivilegeIAMTools v2.0] On-Prem AD Audit — $($startTime.ToString('yyyy-MM-dd HH:mm')) UTC" -ForegroundColor Cyan
+    Write-Host "`n[LeastPrivilegeIAMTools v2.0] On-Prem AD Audit - $($startTime.ToString('yyyy-MM-dd HH:mm')) UTC" -ForegroundColor Cyan
 
     # Verify RSAT is available
     if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
@@ -215,7 +215,7 @@ function Invoke-ADSecurityAudit {
     Write-AuditReports -Findings $allFindings -Score $scoreResult -OutputPath $OutputPath -AuditType 'On-Prem AD'
 
     $elapsed = (Get-Date) - $startTime
-    Write-Host "`n[✓] AD Audit complete in $([int]$elapsed.TotalSeconds)s — Score: $($scoreResult.DomainScore)/100 ($($scoreResult.RiskRating))" -ForegroundColor Green
+    Write-Host "`n[✓] AD Audit complete in $([int]$elapsed.TotalSeconds)s - Score: $($scoreResult.DomainScore)/100 ($($scoreResult.RiskRating))" -ForegroundColor Green
     Write-Host "    Reports: $folder"
     return $scoreResult
 }
@@ -309,7 +309,7 @@ function Write-AuditReports {
     $htmlPath = [IO.Path]::ChangeExtension($OutputPath, 'html')
 
     # TXT
-    $txtLines = @("# LeastPrivilegeIAMTools – $AuditType Audit Report")
+    $txtLines = @("# LeastPrivilegeIAMTools - $AuditType Audit Report")
     $txtLines += "# Generated : $([DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC"
     $txtLines += "# Score     : $($Score.DomainScore)/100 ($($Score.RiskRating))"
     $txtLines += "# Findings  : $($Findings.Count) ($($Score.CriticalCount) Critical, $($Score.HighCount) High, $($Score.MediumCount) Medium, $($Score.LowCount) Low)"
