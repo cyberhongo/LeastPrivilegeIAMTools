@@ -33,7 +33,7 @@ $subModules  = @(
 foreach ($sm in $subModules) {
     $fullPath = Join-Path $moduleRoot $sm
     if (Test-Path $fullPath) {
-        . $fullPath
+        Import-Module $fullPath -Force -Global
     } else {
         Write-Warning "Sub-module not found: $fullPath - related functions will be unavailable."
     }
